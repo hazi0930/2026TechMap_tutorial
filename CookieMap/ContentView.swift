@@ -10,14 +10,40 @@ import RealityKit
 import RealityKitContent
 
 struct ContentView: View {
+    @Environment(\.openImmersiveSpace) private var openImmersiveSpace
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+    
+    @State private var isCookieMap = false
+    
     var body: some View {
         VStack {
-            Model3D(named: "Scene", bundle: realityKitContentBundle)
-                .padding(.bottom, 50)
-
-            Text("Hello, world!")
+            Text("CookieMap 입장")
+                .font(.extraLargeTitle)
+            
+            Button(isCookieMap ? "CookieMap 퇴장하기" : "CookieMap 입장하기") {
+                Task { await toggleCookieMap() }
+            }
         }
         .padding()
+    }
+    
+    
+    private func toggleCookieMap() async {
+        if isCookieMap {
+            // 퇴장해야 한다
+            await dismissImmersiveSpace()
+            isCookieMap = false
+        } else {
+            // 입장해야 한다
+            switch await openImmersiveSpace(id: "OdoriRoom") {
+            case .opened:
+                isCookieMap = true
+            case .userCancelled, .error:
+                isCookieMap = false
+            @unknown default:
+                isCookieMap = false
+            }
+        }
     }
 }
 
