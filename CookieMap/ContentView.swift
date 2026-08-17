@@ -7,9 +7,10 @@
 
 import SwiftUI
 import RealityKit
-import RealityKitContent
 
 struct ContentView: View {
+    @Environment(AppState.self) private var appState
+    
     @Environment(\.openImmersiveSpace) private var openImmersiveSpace
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     
@@ -22,6 +23,13 @@ struct ContentView: View {
             
             Button(isCookieMap ? "CookieMap 퇴장하기" : "CookieMap 입장하기") {
                 Task { await toggleCookieMap() }
+            }
+            if let currentRoomID = appState.currentRoomID {
+                Text("현재 방 감지됨")
+                
+                Text(currentRoomID.uuidString)
+            } else {
+                Text("방 감지 대기중")
             }
         }
         .padding()
@@ -49,4 +57,5 @@ struct ContentView: View {
 
 #Preview(windowStyle: .automatic) {
     ContentView()
+        .environment(AppState())
 }
