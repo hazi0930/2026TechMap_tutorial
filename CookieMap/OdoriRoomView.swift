@@ -14,7 +14,15 @@ struct OdoriRoomView: View {
     
     var body: some View {
         RealityView { content in
-            // usdz 파일 배치
+            // 1. ARKit 세션부터 실행
+            await appState.runSession()
+            
+            guard appState.isSessionRunning else {
+                print("ARKit 세션이 실행되지 않았습니다.")
+                return
+            }
+            
+            // 2. 쿠키 불러오고 위치 지정 usdz 파일 배치
             guard let firstcookie = try? await Entity(
                 named: "marshmellowcookie",
                 in: nil
@@ -27,12 +35,18 @@ struct OdoriRoomView: View {
             firstcookie.scale = [0.6, 0.6, 0.6]
             
             content.add(firstcookie)
-        }
-        .task {
-            await appState.runSession()
+            
+            // 3. 쿠키의 공간좌표 가져오기
+            let cookieTransform = firstcookie.transformMatrix(relativeTo: nil)
+            
+            // 4. 같은 위치에 WorldAnchor 자동생성
+            await appState.addWorldAnchor(at: cookieTransform)
         }
         .task {
             await appState.processRoomTrackingUpdates()
+        }
+        .task {
+            await appState.processWorldTrackingUpdates()
         }
         
         
